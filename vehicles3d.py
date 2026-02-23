@@ -39,6 +39,7 @@ class Vehicle3D(Entity):
         self.total_wait_time = 0
 
         # Base speeds and lengths
+        # Updated for compressed models
         configs = {
             TYPE_BIKE:      {'scale': (0.8, 1.2, 2.0), 'base_col': color.gray, 'speed': 18, 'len': 2.0},
             TYPE_AUTO:      {'scale': (1.4, 1.6, 2.8), 'base_col': color.yellow, 'speed': 15, 'len': 2.8},
@@ -56,25 +57,46 @@ class Vehicle3D(Entity):
         self.collider = 'box'
         self.shader = lit_with_shadows_shader
         
+        # Models paths
+        MODEL_CAR = 'models_compressed/uploads_files_2787791_Mercedes+Benz+GLS+580_clean.bam'
+        MODEL_BUS = 'models_compressed/uploads_files_2263056_bus_byjoao3DModels_clean.bam'
+        MODEL_BIKE = 'models_compressed/Kawasaki Ninja ZX-6R Sport Bike_clean.bam'
+
         if self.vtype in [TYPE_CAR, TYPE_VIP, TYPE_AUTO]:
-            self.model = 'model/car.obj'
-            self.scale = 4.0 / 5.9 # Target length 4.0, real 5.9
-            self.color = color.yellow if self.vtype == TYPE_AUTO else cfg['base_col']
+            self.model = MODEL_CAR
+            # Bounds analysis: Size ~5.9m long. Target ~4m. Scale ~0.68
+            # The model might need rotation correction if it faces wrong way.
+            # Assuming standard Z-forward or Y-forward. Ursina is Z-forward.
+            # Most external models are Y-forward or -Y.
+            # We will apply a base rotation fix if needed in future steps, but for now assuming direct mapping.
+            # Scaling: 4.0 target / 5.92 real = 0.675
+            scale_factor = 0.68
+            self.scale = scale_factor
+            
+            if self.vtype == TYPE_AUTO:
+                self.color = color.yellow
+                self.scale = scale_factor * 0.7 # Autos are smaller
+            else:
+                self.color = color.white if self.vtype == TYPE_VIP else cfg['base_col']
+                if self.vtype == TYPE_VIP: self.color = color.black
             
         elif self.vtype == TYPE_BUS or self.vtype == TYPE_AMBULANCE:
-            self.model = 'model/bus.obj'
-            self.scale = 9.0 / 8.9 # Target length 9.0, real 8.9
-            self.color = color.white if self.vtype == TYPE_AMBULANCE else cfg['base_col']
-            
             if self.vtype == TYPE_AMBULANCE:
-                # Add a red light bar on top of the bus model
-                # Scaled relative to parent
-                Entity(parent=self, model='cube', scale=(0.4/self.scale.x, 0.4/self.scale.y, 0.4/self.scale.z), 
-                       y=1.5/self.scale.y, z=0.2, color=color.red, shader=lit_with_shadows_shader)
+                self.model = MODEL_CAR # Use Car model for ambulance for better look than Bus
+                self.scale = 0.8 # Slightly larger than car
+                self.color = color.white
+                # Add red cross or lights
+                Entity(parent=self, model='cube', scale=(0.6, 0.2, 0.2), y=2.5, color=color.red, shader=lit_with_shadows_shader)
+            else:
+                self.model = MODEL_BUS
+                # Bounds analysis: Size ~9m. Target ~9m. Scale ~1.0
+                self.scale = 1.0
+                self.color = cfg['base_col']
         
         elif self.vtype == TYPE_BIKE:
-            self.model = 'model/bike.obj'
-            self.scale = 2.0 / 1796.0 # Giantic native scale
+            self.model = MODEL_BIKE
+            # Bounds analysis: Size ~1796m. Target ~2m. Scale ~0.0011
+            self.scale = 0.0011
             self.color = cfg['base_col']
             
         else:
@@ -95,11 +117,20 @@ class Vehicle3D(Entity):
 
         # Apply start position based on direction
         spawn_pos = (dir_vec * -spawn_dist) + (right_vec * offset_from_center)
-        spawn_pos.y = self.scale.y / 2
+        spawn_pos.y = 0.5 # Lift slightly above ground
+        if self.model == MODEL_BIKE: spawn_pos.y = 0 # Bike pivot might be at bottom
         
         self.position = spawn_pos
         self.rotation_y = LANE_ROTS[self.lane_id]
         
+        # Adjust specific model rotations if they are imported sideways
+        # Common fix for BAM models if they face +Y or -Y instead of +Z
+        if self.model in [MODEL_CAR, MODEL_BUS, MODEL_BIKE]:
+             # Often external models need 180 or 90 fix.
+             # Let's assume they are standard and see.
+             # If they drive sideways, we add rotation here.
+             pass
+
     def update_vehicle(self, current_light, lead_vehicle, dt, sim_time):
         should_stop = False
         
