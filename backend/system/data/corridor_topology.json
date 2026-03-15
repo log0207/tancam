@@ -1,0 +1,14 @@
+{
+  "corridor_id": "C1",
+  "priority_direction": "NORTHBOUND",
+  "average_vehicle_speed_mps": 11.11,
+  "intersections": [
+    {"intersection_id": "J01", "distance_to_next_m": 120},
+    {"intersection_id": "J02", "distance_to_next_m": 140},
+    {"intersection_id": "J03", "distance_to_next_m": 0}
+  ],
+  "links": [
+    {"from": "J01", "to": "J02", "distance_m": 120},
+    {"from": "J02", "to": "J03", "distance_m": 140}
+  ]
+}

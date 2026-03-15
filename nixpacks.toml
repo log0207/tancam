@@ -1,0 +1,12 @@
+[variables]
+PYTHONUNBUFFERED = "1"
+PORT = "1234"
+
+[phases.setup]
+nixPkgs = ["python311"]
+
+[phases.build]
+cmds = ["python -m venv /opt/venv", ". /opt/venv/bin/activate && pip install --no-cache-dir -r requirements.txt"]
+
+[start]
+cmd = ". /opt/venv/bin/activate && uvicorn webapp:app --host 0.0.0.0 --port $PORT --workers 1 --limit-concurrency 50 --timeout-keep-alive 5 --access-log"

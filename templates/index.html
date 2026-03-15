@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TANCAM Multi-Intersection Simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body class="simulation-body">
+  <div id="sim-container">
+    <canvas id="sim-canvas"></canvas>
+    <div id="cv-overlay"></div>
+  </div>
+
+  <header class="sim-topbar">
+    <div class="sim-title-wrap">
+      <h1 id="sim-title">TANCAM Multi-Intersection Corridor Simulation</h1>
+      <p id="sim-subtitle">Simulation-only view. Dashboard controls traffic. Camera: 1/2/3/4, [ and ] to switch junction, V for AI overlay.</p>
+    </div>
+    <div class="sim-meta">
+      <span id="sim-node-count">Intersections: --</span>
+      <span id="sim-vehicle-count">Vehicles: --</span>
+      <span id="sim-follow-status">Follow: AUTO</span>
+      <div class="sim-view-controls">
+        <button id="sim-cam-1" type="button" class="sim-nav-btn">Iso</button>
+        <button id="sim-cam-2" type="button" class="sim-nav-btn">Top</button>
+        <button id="sim-cam-3" type="button" class="sim-nav-btn">Free</button>
+        <button id="sim-cam-4" type="button" class="sim-nav-btn">Follow</button>
+        <button id="sim-ai-toggle" type="button" class="sim-nav-btn">AI Off</button>
+      </div>
+      <div class="sim-nav-controls">
+        <button id="sim-prev-junction" type="button" class="sim-nav-btn">Prev</button>
+        <select id="sim-junction-view" aria-label="Junction view selector"></select>
+        <button id="sim-next-junction" type="button" class="sim-nav-btn">Next</button>
+      </div>
+      <a href="/dashboard" class="dashboard-link">Open Dashboard</a>
+    </div>
+  </header>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script>
+    window.__TANCAM_FEATURE_FLAGS = {{ feature_flags | tojson }};
+  </script>
+  <script type="module" src="/static/js/sim.js?v=20260313i"></script>
+</body>
+</html>
